@@ -23,3 +23,5 @@ Export reports as CSV
 Responsive design for desktop and mobile
 
 User-friendly dashboard
+
+<img width="1748" height="862" alt="image" src="https://github.com/user-attachments/assets/85df7ca0-7015-4463-977e-f4336cacffe3" />
