@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Instagram Unfollower Checker</title>
+<style>
+  :root {
+    --bg: #0f0f12;
+    --panel: #18181d;
+    --panel-2: #1f1f26;
+    --border: #2a2a33;
+    --text: #f5f5f7;
+    --muted: #9a9aa6;
+    --accent: #e1306c;
+    --accent-2: #f77737;
+    --ok: #34d399;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: radial-gradient(1200px 600px at 10% -10%, #2a1230 0%, transparent 60%),
+                radial-gradient(900px 500px at 100% 0%, #3a1a14 0%, transparent 60%),
+                var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  .container { max-width: 980px; margin: 0 auto; padding: 40px 20px 80px; }
+  header { text-align: center; margin-bottom: 32px; }
+  h1 {
+    margin: 0 0 8px;
+    font-size: clamp(28px, 4vw, 40px);
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  header p { color: var(--muted); margin: 0; }
+
+  .uploads { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  @media (max-width: 640px) { .uploads { grid-template-columns: 1fr; } }
+
+  .drop {
+    background: var(--panel);
+    border: 1.5px dashed var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s ease;
+  }
+  .drop:hover, .drop.drag { border-color: var(--accent); background: var(--panel-2); }
+  .drop h3 { margin: 0 0 6px; font-size: 16px; }
+  .drop p { margin: 0; color: var(--muted); font-size: 13px; }
+  .drop .status { margin-top: 10px; font-size: 13px; color: var(--ok); }
+  .drop input { display: none; }
+
+  .options {
+    display: flex; flex-wrap: wrap; gap: 16px; align-items: center;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 18px; margin-bottom: 16px;
+  }
+  .options label { display: flex; align-items: center; gap: 8px; color: var(--text); font-size: 14px; cursor: pointer; }
+  .options input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--accent); }
+
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px; }
+  button {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: white; border: 0; padding: 12px 20px;
+    border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 14px;
+    transition: transform .15s ease, opacity .15s ease;
+  }
+  button:hover { transform: translateY(-1px); }
+  button:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+  button.secondary { background: var(--panel-2); border: 1px solid var(--border); }
+
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .tab {
+    padding: 10px 16px; cursor: pointer; color: var(--muted);
+    border-bottom: 2px solid transparent; font-size: 14px; font-weight: 500;
+  }
+  .tab.active { color: var(--text); border-bottom-color: var(--accent); }
+  .tab .count {
+    display: inline-block; background: var(--panel-2);
+    padding: 2px 8px; border-radius: 999px; margin-left: 6px; font-size: 12px;
+  }
+
+  .search {
+    width: 100%; background: var(--panel); border: 1px solid var(--border);
+    color: var(--text); padding: 10px 14px; border-radius: 10px; font-size: 14px;
+    margin-bottom: 12px;
+  }
+  .search:focus { outline: none; border-color: var(--accent); }
+
+  .list { display: grid; gap: 8px; }
+  .item {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--panel); border: 1px solid var(--border);
+    padding: 12px 16px; border-radius: 10px;
+  }
+  .item .name { font-weight: 500; }
+  .item .meta { color: var(--muted); font-size: 12px; }
+  .item a {
+    color: var(--accent); text-decoration: none; font-size: 13px;
+    padding: 6px 12px; border: 1px solid var(--border); border-radius: 8px;
+  }
+  .item a:hover { background: var(--panel-2); }
+  .empty { text-align: center; padding: 40px; color: var(--muted); }
+
+  details.help {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 18px; margin-bottom: 20px;
+  }
+  details.help summary { cursor: pointer; font-weight: 600; }
+  details.help ol { color: var(--muted); font-size: 14px; line-height: 1.6; }
+  details.help code { background: var(--panel-2); padding: 2px 6px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Instagram Unfollower Checker</h1>
+    <p>Upload your Instagram followers and following HTML files to see who doesn't follow you back.</p>
+  </header>
+
+  <details class="help">
+    <summary>How to get your HTML files</summary>
+    <ol>
+      <li>Go to Instagram → Settings → <b>Accounts Center</b> → Your information and permissions → <b>Download your information</b>.</li>
+      <li>Choose <b>Some of your information</b> → select <b>Followers and following</b>.</li>
+      <li>Set format to <b>HTML</b>, request the download, then unzip the file Instagram emails you.</li>
+      <li>Inside <code>connections/followers_and_following/</code> upload <code>followers_1.html</code> and <code>following.html</code> below.</li>
+      <li>Everything runs in your browser — nothing is uploaded anywhere.</li>
+    </ol>
+  </details>
+
+  <div class="uploads">
+    <label class="drop" id="dropFollowers">
+      <h3>📥 followers_1.html</h3>
+      <p>People who follow you</p>
+      <div class="status" id="statusFollowers"></div>
+      <input type="file" accept=".html,.htm" id="fileFollowers" />
+    </label>
+    <label class="drop" id="dropFollowing">
+      <h3>📤 following.html</h3>
+      <p>People you follow</p>
+      <div class="status" id="statusFollowing"></div>
+      <input type="file" accept=".html,.htm" id="fileFollowing" />
+    </label>
+  </div>
+
+  <div class="options">
+    <label><input type="checkbox" id="excludeVerified" /> Exclude verified accounts</label>
+    <span style="color: var(--muted); font-size: 12px;">(verified status is detected heuristically when present)</span>
+  </div>
+
+  <div class="actions">
+    <button id="analyzeBtn" disabled>Analyze</button>
+    <button class="secondary" id="resetBtn">Reset</button>
+    <button class="secondary" id="exportBtn" disabled>Export current list (.txt)</button>
+  </div>
+
+  <div id="results" style="display:none;">
+    <div class="tabs">
+      <div class="tab active" data-tab="notFollowingBack">Not following you back <span class="count" id="countNFB">0</span></div>
+      <div class="tab" data-tab="youDontFollowBack">You don't follow back <span class="count" id="countYDF">0</span></div>
+      <div class="tab" data-tab="mutuals">Mutuals <span class="count" id="countMUT">0</span></div>
+    </div>
+    <input class="search" id="search" placeholder="Search username..." />
+    <div class="list" id="list"></div>
+  </div>
+</div>
+
+<script>
+const state = {
+  followers: null,    // Set of usernames
+  following: null,
+  verified: new Set(),// usernames flagged verified
+  currentTab: 'notFollowingBack',
+  data: { notFollowingBack: [], youDontFollowBack: [], mutuals: [] },
+};
+
+function parseInstagramHTML(htmlText) {
+  const doc = new DOMParser().parseFromString(htmlText, 'text/html');
+  const users = new Map(); // username -> { verified }
+
+  const RESERVED = new Set([
+    'p','reel','reels','explore','stories','tv','accounts','about','directory',
+    'developer','legal','privacy','terms','help','press','api','web','direct',
+    'hashtag','locations','session','challenge','_u','_n'
+  ]);
+
+  const anchors = doc.querySelectorAll('a[href*="instagram.com/"]');
+  anchors.forEach(a => {
+    try {
+      const url = new URL(a.getAttribute('href'), 'https://www.instagram.com');
+      const host = url.hostname.toLowerCase();
+      if (host !== 'www.instagram.com' && host !== 'instagram.com') return;
+
+      let parts = url.pathname.split('/').filter(Boolean);
+      if (parts.length === 0) return;
+      // Instagram exports use /_u/<username> or /_n/<username>
+      if (parts[0] === '_u' || parts[0] === '_n') parts = parts.slice(1);
+      if (parts.length === 0 || parts.length > 1) return;
+
+      const username = parts[0].toLowerCase();
+      if (!/^[a-z0-9._]{1,30}$/.test(username)) return;
+      if (RESERVED.has(username)) return;
+
+      // Validate link text references the same username (full URL or bare name)
+      const linkText = (a.textContent || '').trim().toLowerCase().replace(/^@/, '');
+      if (linkText && linkText !== username && !linkText.includes('/' + username)) return;
+
+      let verified = false;
+      const ctx = a.closest('div,td,li,tr,article')?.textContent || '';
+      if (/\bverified\b/i.test(ctx) || /✓|☑/.test(ctx)) verified = true;
+
+      if (!users.has(username)) users.set(username, { verified });
+      else if (verified) users.get(username).verified = true;
+    } catch(e) {}
+  });
+
+  return users;
+}
+
+function readFile(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = reject;
+    r.readAsText(file);
+  });
+}
+
+async function handleFile(which, file) {
+  if (!file) return;
+  const text = await readFile(file);
+  const users = parseInstagramHTML(text);
+  if (users.size === 0) {
+    alert('No usernames found in this file. Make sure it is the correct Instagram HTML export.');
+    return;
+  }
+  const set = new Set(users.keys());
+  state[which] = set;
+  users.forEach((info, u) => { if (info.verified) state.verified.add(u); });
+
+  document.getElementById('status' + (which === 'followers' ? 'Followers' : 'Following')).textContent =
+    `Loaded ${set.size} ${which}`;
+  document.getElementById('analyzeBtn').disabled = !(state.followers && state.following);
+}
+
+function analyze() {
+  const exclude = document.getElementById('excludeVerified').checked;
+  const filter = u => !(exclude && state.verified.has(u));
+
+  const notFollowingBack = [...state.following].filter(u => !state.followers.has(u)).filter(filter).sort();
+  const youDontFollowBack = [...state.followers].filter(u => !state.following.has(u)).filter(filter).sort();
+  const mutuals = [...state.following].filter(u => state.followers.has(u)).filter(filter).sort();
+
+  state.data = { notFollowingBack, youDontFollowBack, mutuals };
+  document.getElementById('countNFB').textContent = notFollowingBack.length;
+  document.getElementById('countYDF').textContent = youDontFollowBack.length;
+  document.getElementById('countMUT').textContent = mutuals.length;
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('exportBtn').disabled = false;
+  render();
+}
+
+function render() {
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  const list = state.data[state.currentTab].filter(u => !q || u.includes(q));
+  const el = document.getElementById('list');
+  if (list.length === 0) {
+    el.innerHTML = `<div class="empty">No users to show.</div>`;
+    return;
+  }
+  el.innerHTML = list.map(u => `
+    <div class="item">
+      <div>
+        <div class="name">@${u}${state.verified.has(u) ? ' <span class="meta">• verified</span>' : ''}</div>
+      </div>
+      <a href="https://instagram.com/${u}" target="_blank" rel="noopener">Open ↗</a>
+    </div>
+  `).join('');
+}
+
+// Wire up file inputs + drag/drop
+function wireDrop(dropId, inputId, which) {
+  const drop = document.getElementById(dropId);
+  const input = document.getElementById(inputId);
+  input.addEventListener('change', e => handleFile(which, e.target.files[0]));
+  ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('drag'); }));
+  ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('drag'); }));
+  drop.addEventListener('drop', e => {
+    const f = e.dataTransfer.files[0];
+    if (f) handleFile(which, f);
+  });
+}
+wireDrop('dropFollowers', 'fileFollowers', 'followers');
+wireDrop('dropFollowing', 'fileFollowing', 'following');
+
+document.getElementById('analyzeBtn').addEventListener('click', analyze);
+document.getElementById('resetBtn').addEventListener('click', () => location.reload());
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  t.classList.add('active');
+  state.currentTab = t.dataset.tab;
+  render();
+}));
+document.getElementById('search').addEventListener('input', render);
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const list = state.data[state.currentTab];
+  const blob = new Blob([list.map(u => '@' + u).join('\n')], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = state.currentTab + '.txt';
+  a.click();
+});
+</script>
+</body>
+</html>
